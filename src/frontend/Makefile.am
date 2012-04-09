@@ -21,7 +21,7 @@ mosh_server_LDADD = $(LDADD) -lutil
 bin_PROGRAMS =
 
 if BUILD_CLIENT
-  bin_PROGRAMS += mosh-client
+  bin_PROGRAMS += mosh-client mosh
 endif
 
 if BUILD_SERVER
@@ -30,3 +30,4 @@ endif
 
 mosh_client_SOURCES = mosh-client.cc stmclient.cc stmclient.h terminaloverlay.cc terminaloverlay.h
 mosh_server_SOURCES = mosh-server.cc
+mosh_SOURCES = mosh.cc
