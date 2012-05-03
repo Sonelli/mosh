@@ -17,6 +17,7 @@ AM_LDFLAGS  = $(HARDEN_LDFLAGS)
 LDADD = ../crypto/libmoshcrypto.a ../network/libmoshnetwork.a ../statesync/libmoshstatesync.a ../terminal/libmoshterminal.a ../util/libmoshutil.a ../protobufs/libmoshprotos.a $(STDDJB_LDFLAGS) $(working_poll_LIBS) -lm $(TINFO_LIBS) $(protobuf_LIBS)
 
 mosh_server_LDADD = $(LDADD) -lutil
+mosh_LDADD = $(LDADD) -lutil
 
 bin_PROGRAMS =
 
