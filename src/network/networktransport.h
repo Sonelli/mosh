@@ -101,7 +101,7 @@ namespace Network {
 
     unsigned int send_interval( void ) const { return sender.send_interval(); }
 
-    const struct in_addr & get_remote_ip( void ) const { return connection.get_remote_ip(); }
+    std::string getRemoteIP( ) { return connection.getRemoteIP(); }
 
     const NetworkException *get_send_exception( void ) const { return connection.get_send_exception(); }
   };

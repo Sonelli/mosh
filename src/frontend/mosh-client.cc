@@ -86,7 +86,7 @@ int main( int argc, char *argv[] )
 
   /* Sanity-check arguments */
   if ( ip
-       && ( strspn( ip, "0123456789." ) != strlen( ip ) ) ) {
+       && ( strspn( ip, "0123456789abcdef:." ) != strlen( ip ) ) ) {
     fprintf( stderr, "%s: Bad IP address (%s)\n\n", argv[ 0 ], ip );
     usage( argv[ 0 ] );
     exit( 1 );

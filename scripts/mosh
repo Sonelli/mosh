@@ -20,7 +20,8 @@ my $MOSH_VERSION = '1.2.2';
 
 use warnings;
 use strict;
-use Socket;
+use Socket qw(getaddrinfo getnameinfo inet_ntop unpack_sockaddr_in unpack_sockaddr_in6 IPPROTO_TCP AF_INET6 NI_NUMERICHOST NIx_NOSERV);
+use IO::Socket;
 use IO::Pty;
 use Getopt::Long;
 
@@ -82,6 +83,32 @@ sub predict_check {
   }
 }
 
+sub ip_and_sockaddr {
+  my($host,$port) = @_;
+  my($err, @result) = getaddrinfo($host,$port,{protocol => IPPROTO_TCP});
+  if ( $err ) {
+    die "$0: Could not resolve hostname $host: $err\n";
+  }
+
+  my(@v6ip);
+
+  foreach my $res (@result) {
+    my($err, $ip) = getnameinfo($res->{addr}, NI_NUMERICHOST, NIx_NOSERV);
+    if($err) {
+      die("$0: failed to turn sockaddr into ip\n");
+    }
+    if($res->{family} == AF_INET6) {
+      if(not @v6ip) {
+        @v6ip = ($ip,$res);
+      }
+    } else {
+      return ($ip,$res); # use IPv4 by default
+    }
+  }
+
+  return @v6ip; # fall back to IPv6 only if there's no IPv4
+}
+
 GetOptions( 'client=s' => \$client,
 	    'server=s' => \$server,
 	    'predict=s' => \$predict,
@@ -121,24 +148,20 @@ delete $ENV{ 'MOSH_PREDICTION_DISPLAY' };
 
 if ( defined $fake_proxy ) {
   use Errno qw(EINTR);
-  use IO::Socket::INET;
   use POSIX qw(_exit);
 
   my ( $host, $port ) = @ARGV;
 
   # Resolve hostname
-  my $packed_ip = gethostbyname $host;
-  if ( not defined $packed_ip ) {
-    die "$0: Could not resolve hostname $host\n";
-  }
-  my $ip = inet_ntoa $packed_ip;
+  my($ip,$res) = ip_and_sockaddr($host,$port);
 
   print STDERR "MOSH IP $ip\n";
 
   # Act like netcat
-  my $sock = IO::Socket::INET->new( PeerAddr => $ip,
-				    PeerPort => $port,
-				    Proto => "tcp" )
+  my $sock = IO::Socket->new();
+  $sock->socket($res->{family}, $res->{socktype}, $res->{protocol})
+    or die "$0: socket for host $ip port $port: $!\n";
+  $sock->connect($res->{addr})
     or die "$0: connect to host $ip port $port: $!\n";
 
   sub cat {
