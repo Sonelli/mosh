@@ -1,0 +1,40 @@
+#!/bin/sh
+set -e 
+
+PACKAGE=mosh
+
+case "$1" in
+  build)
+    if [ \! -f configure ]; then
+      ./autogen.sh
+    fi
+    NCURSES_INCLUDE=~/droid/data/local/include/ncurses/
+    ./configure --host=arm-linux --prefix=/data/local \
+      CC=agcc CXX=ag++ LDFLAGS="-Wl,-dynamic-linker,/data/local/bin/linker" \
+      CXXFLAGS="-I$NCURSES_INCLUDE"
+    # -lpthread comes from the cross-compiling machine's library requirements
+    # -lutil is needed for forkpty on the cross-compiling machine
+    # -fPIE/-pie breaks android's dynamic linker
+    sed -i -e 's/protobuf_LIBS = -lprotobuf -lz -lpthread/protobuf_LIBS = -lprotobuf -lz/' \
+      -e 's/mosh_server_LDADD = $(LDADD) -lutil/mosh_server_LDADD = $(LDADD)/' \
+      -e 's/^\(HARDEN_CFLAGS = .*\)-fPIE\(.*\)/\1 \2/' \
+      -e 's/^\(HARDEN_LDFLAGS = .*\)-pie\(.*\)/\1 \2/' \
+      src/frontend/Makefile
+    make
+    ;;
+
+  install)
+    DESTDIR=~/tmp/$PACKAGE
+    rm -rf $DESTDIR
+    mkdir -p $DESTDIR
+    make install DESTDIR=$DESTDIR
+    ;;
+    
+  clean)
+    make clean
+    ;;
+
+  *)
+    echo unknown argument $1
+    ;;
+esac
