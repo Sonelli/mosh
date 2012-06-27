@@ -26,4 +26,10 @@
 int my_forkpty (int *amaster, char *name, const struct termios *termp, const struct winsize *winp);
 #endif
 
+#ifndef HAVE_OPENPTY
+#define openpty my_openpty
+int my_openpty (int *amaster, int *aslave, char *name, const struct termios *termp,
+         const struct winsize *winp);
+#endif
+
 #endif

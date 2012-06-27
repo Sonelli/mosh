@@ -27,16 +27,17 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#include "pty.h"
+
 #ifndef HAVE_OPENPTY
 /* from dropbear 0.53.1 sshpty.c, original license: "can be used freely for any purpose." */
-int
-openpty (int *amaster, int *aslave, char *name, const struct termios *termp,
+int my_openpty (int *amaster, int *aslave, char *name, const struct termios *termp,
          const struct winsize *winp)
 {
   int master, slave;
   char *name_slave;
 
-  master = open("/dev/ptmx", O_RDWR | O_NONBLOCK);
+  master = open("/dev/ptmx", O_RDWR);
   if (master == -1) {
 //    TRACE(("Fail to open master"))
     return -1;
