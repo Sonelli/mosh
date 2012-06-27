@@ -50,6 +50,7 @@
 #include "fatal_assert.h"
 #include "locale_utils.h"
 #include "select.h"
+#include "pty.h"
 
 #if HAVE_PTY_H
 #include <pty.h>
@@ -361,9 +362,9 @@ int run_server( const char *desired_ip, const char *desired_port,
   /* close file descriptors */
   if ( !verbose ) {
     /* Necessary to properly detach on old versions of sshd (e.g. RHEL/CentOS 5.0). */
-    fclose( stdin );
-    fclose( stdout );
-    fclose( stderr );
+    close( STDIN_FILENO );
+    close( STDOUT_FILENO );
+    close( STDERR_FILENO );
   }
 
   /* Fork child process */
@@ -376,11 +377,6 @@ int run_server( const char *desired_ip, const char *desired_port,
 
   if ( child == 0 ) {
     /* child */
-
-    /* reopen stdio */
-    stdin = fdopen( STDIN_FILENO, "r" );
-    stdout = fdopen( STDOUT_FILENO, "w" );
-    stderr = fdopen( STDERR_FILENO, "w" );
 
     /* reenable signals */
     struct sigaction sa;
