@@ -15,8 +15,9 @@ case "$1" in
     # -lpthread comes from the cross-compiling machine's library requirements
     # -lutil is needed for forkpty on the cross-compiling machine
     # -fPIE/-pie breaks android's dynamic linker
-    sed -i -e 's/protobuf_LIBS = -lprotobuf -lz -lpthread/protobuf_LIBS = -lprotobuf -lz/' \
-      -e 's/mosh_server_LDADD = $(LDADD) -lutil/mosh_server_LDADD = $(LDADD)/' \
+    sed -i -e 's/^protobuf_LIBS = -lprotobuf -lz -lpthread/protobuf_LIBS = -lprotobuf -lz/' \
+      -e 's/^mosh_server_LDADD = $(LDADD) -lutil/mosh_server_LDADD = $(LDADD)/' \
+      -e 's/^mosh_LDADD = $(LDADD) -lutil/mosh_LDADD = $(LDADD)/' \
       -e 's/^\(HARDEN_CFLAGS = .*\)-fPIE\(.*\)/\1 \2/' \
       -e 's/^\(HARDEN_LDFLAGS = .*\)-pie\(.*\)/\1 \2/' \
       src/frontend/Makefile

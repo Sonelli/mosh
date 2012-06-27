@@ -5,6 +5,6 @@ Maintainer: Dan Drown <dan-android@drown.org>
 Package: mosh
 Version: ddrown-git2012.6.27
 Architecture: arm
-Depends: linker, protobuf, ncurses, libgnustl_shared
+Depends: linker, protobuf, ncurses, libgnustl_shared, openssh
 Description: Mosh is a remote terminal application that is designed to handle
  roaming between networks and high latency
