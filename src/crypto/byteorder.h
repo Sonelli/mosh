@@ -107,4 +107,10 @@ inline uint16_t be16toh( uint16_t x ) {
 
 #endif
 
+#ifdef __ANDROID__
+/* Android has different names for these */
+# define be64toh betoh64
+# define be16toh betoh16
+#endif
+
 #endif

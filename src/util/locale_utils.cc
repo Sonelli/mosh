@@ -58,6 +58,7 @@ const LocaleVar get_ctype( void )
 
 const char *locale_charset( void )
 {
+#ifdef HAVE_LANGINFO_H
   static const char ASCII_name[] = "US-ASCII";
 
   /* Produce more pleasant name of US-ASCII */
@@ -68,18 +69,26 @@ const char *locale_charset( void )
   }
 
   return ret;
+#else
+  return "unknown";
+#endif
 }
 
 bool is_utf8_locale( void ) {
+#ifdef HAVE_LANGINFO_H
   /* Verify locale calls for UTF-8 */
   if ( strcmp( locale_charset(), "UTF-8" ) != 0 &&
        strcmp( locale_charset(), "utf-8" ) != 0 ) {
     return 0;
   }
   return 1;
+#else
+  return true; // lies!
+#endif
 }
 
 void set_native_locale( void ) {
+#ifdef HAVE_LANGINFO_H
   /* Adopt native locale */
   if ( NULL == setlocale( LC_ALL, "" ) ) {
     int saved_errno = errno;
@@ -95,6 +104,7 @@ void set_native_locale( void ) {
       perror( "setlocale" );
     }
   }
+#endif
 }
 
 void clear_locale_variables( void ) {
