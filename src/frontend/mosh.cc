@@ -32,6 +32,7 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <termios.h>
 
 #if HAVE_PTY_H
 #include <pty.h>
@@ -42,6 +43,8 @@
 #if OPENPTY_IN_LIBUTIL
 #include <libutil.h>
 #endif
+
+#include "pty.h"
 
 #if !HAVE_GETLINE
 ssize_t getline( char ** restrict linep,
@@ -291,7 +294,6 @@ int main( int argc, char *argv[] )
     int rv;
 
     memset( &hints, 0, sizeof( hints ) );
-    hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 
     if ( ( rv = getaddrinfo( host.c_str(),
@@ -304,9 +306,22 @@ int main( int argc, char *argv[] )
            gai_strerror( rv ) );
     }
 
+    int try_family = AF_INET;
     // loop through all the results and connect to the first we can
-    for ( p = servinfo; p != NULL; p = p->ai_next ) {
-      if ( ( sockfd = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ) ) == -1 ) {
+    for ( p = servinfo; p != NULL || try_family == AF_INET; p = p->ai_next ) {
+      if(p == NULL && try_family == AF_INET) { // start over and try AF_INET6
+        p = servinfo;
+        try_family = AF_INET6;
+      }
+      if(p == NULL) {
+        break; // servinfo == NULL
+      }
+
+      if(p->ai_family != try_family) {
+        continue;
+      }
+
+      if ( ( sockfd = socket( p->ai_family, SOCK_STREAM, IPPROTO_TCP ) ) == -1 ) {
         continue;
       }
 
@@ -358,11 +373,6 @@ int main( int argc, char *argv[] )
   string userhost = argv[optind++];
   char **command = &argv[optind];
   int commands = argc - optind;
-
-  int pipe_fd[2];
-  if ( pipe( pipe_fd ) < 0 ) {
-    die( "%s: pipe: %d", argv[0], errno );
-  }
 
   string color_invocation = client + " -c";
   FILE *color_file = popen( color_invocation.c_str(), "r" );
