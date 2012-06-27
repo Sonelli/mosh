@@ -140,9 +140,13 @@ void InternetAddress::setViaLookup(const char *hostname, const char *port, int s
     throw new NetworkException(gai_strerror(status), errno);
   }
 
-  memcpy(&remote_addr, res->ai_addr, res->ai_addrlen);
-  remote_addr_len = res->ai_addrlen;
-  freeaddrinfo(res);
+  if(res) {
+    memcpy(&remote_addr, res->ai_addr, res->ai_addrlen);
+    remote_addr_len = res->ai_addrlen;
+    freeaddrinfo(res);
+  } else {
+    throw new NetworkException("no res but no error",0);
+  }
 }
 
 int InternetAddress::getPort() {
@@ -191,8 +195,15 @@ bool InternetAddress::operator==( const InternetAddress &b ) {
     return (remote_addr.in.sin_addr.s_addr == b.remote_addr.in.sin_addr.s_addr) &&
       (remote_addr.in.sin_port == b.remote_addr.in.sin_port);
   } else {
-    return IN6_ARE_ADDR_EQUAL(remote_addr.in6.sin6_addr.s6_addr32, b.remote_addr.in6.sin6_addr.s6_addr32) &&
-      (remote_addr.in6.sin6_port == b.remote_addr.in6.sin6_port);
+    if(remote_addr.in6.sin6_port != b.remote_addr.in6.sin6_port) {
+      return false;
+    }
+    for(int i = 0; i < 4; i++) {
+      if(remote_addr.in6.sin6_addr.s6_addr32[i] != b.remote_addr.in6.sin6_addr.s6_addr32[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 }
 
@@ -257,6 +268,7 @@ void Connection::setup( )
 #endif
 
   /* set diffserv values to AF42 + ECT */
+#ifdef IPTOS_DSCP_AF42
   uint8_t dscp = IPTOS_ECN_ECT0 | IPTOS_DSCP_AF42;
   if(remote_addr.getFamily() == AF_INET6) {
     if ( setsockopt( sock, IPPROTO_IPV6, IPV6_TCLASS, &dscp, 1) < 0 ) {
@@ -267,6 +279,7 @@ void Connection::setup( )
       //    perror( "setsockopt( IP_TOS )" );
     }
   }
+#endif
 }
 
 Connection::Connection( const char *desired_ip, const char *desired_port ) /* server */
@@ -360,7 +373,7 @@ bool Connection::try_bind()
 Connection::Connection( const char *key_str, const char *ip, int port ) /* client */
   : sock( -1 ),
     has_remote_addr( true ),
-    remote_addr(ip, "", SOCK_DGRAM),
+    remote_addr(ip, "0", SOCK_DGRAM),
     server( false ),
     MTU( SEND_MTU ),
     key( key_str ),
