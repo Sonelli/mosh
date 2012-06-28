@@ -29,6 +29,7 @@ case "$1" in
     rm -rf $DESTDIR
     mkdir -p $DESTDIR
     make install DESTDIR=$DESTDIR
+    install -m755 src/frontend/mosh $DESTDIR/data/local/bin/
     ;;
     
   clean)
