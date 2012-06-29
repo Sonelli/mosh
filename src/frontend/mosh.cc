@@ -142,6 +142,9 @@ static const char *usage_format =
 "\n"
 "-p NUM  --port=NUM           server-side UDP port\n"
 "\n"
+"-P NUM  --ssh-port=NUM       ssh server port\n"
+"                                (default: let the ssh command choose)\n"
+"\n"
 "        --ssh=COMMAND        ssh command to run when setting up session\n"
 "                                (example: \"ssh -p 2222\")\n"
 "                                (default: \"ssh\")\n"
@@ -197,13 +200,22 @@ void cat( int ifd, int ofd )
   }
 }
 
+bool valid_port(string port) {
+  if ( port.size() ) {
+    return port.find_first_not_of( "0123456789" ) == string::npos &&
+         atoi( port.c_str() ) > 0 &&
+         atoi( port.c_str() ) <= 65535;
+  }
+  return true; // consider no port to be the default value
+}
+
 int main( int argc, char *argv[] )
 {
   argv0 = argv[0];
   string client = "mosh-client";
   string server = "mosh-server";
   string ssh = "ssh";
-  string predict, port_request;
+  string predict, port_request, ssh_port;
   int help=0, version=0, fake_proxy=0;
 
   static struct option long_options[] =
@@ -212,6 +224,7 @@ int main( int argc, char *argv[] )
     { "server",      required_argument,  0,              's' },
     { "predict",     required_argument,  0,              'r' },
     { "port",        required_argument,  0,              'p' },
+    { "ssh-port",    required_argument,  0,              'P' },
     { "ssh",         required_argument,  0,              'S' },
     { "help",        no_argument,        &help,           1  },
     { "version",     no_argument,        &version,        1  },
@@ -220,7 +233,7 @@ int main( int argc, char *argv[] )
   };
   while ( 1 ) {
     int option_index = 0;
-    int c = getopt_long( argc, argv, "anp:",
+    int c = getopt_long( argc, argv, "anp:P:",
         long_options, &option_index );
     if ( c == -1 ) {
       break;
@@ -241,6 +254,9 @@ int main( int argc, char *argv[] )
         break;
       case 'p':
         port_request = optarg;
+        break;
+      case 'P':
+        ssh_port = optarg;
         break;
       case 'S':
         ssh = optarg;
@@ -273,14 +289,16 @@ int main( int argc, char *argv[] )
     predict_check( predict, 0 );
   }
 
-  if ( port_request.size() ) {
-    if ( port_request.find_first_not_of( "0123456789" ) != string::npos ||
-         atoi( port_request.c_str() ) < 0 ||
-         atoi( port_request.c_str() ) > 65535 ) {
-      die( "%s: Server-side port (%s) must be within valid range [0..65535].",
-           argv[0],
-           port_request.c_str() );
-    }
+  if(!valid_port(port_request)) {
+    die( "%s: Server-side port (%s) must be within valid range [0..65535].",
+        argv[0],
+        port_request.c_str() );
+  }
+
+  if(!valid_port(ssh_port)) {
+    die( "%s: SSH port (%s) must be within valid range [0..65535].",
+        argv[0],
+        ssh_port.c_str() );
   }
 
   unsetenv( "MOSH_PREDICTION_DISPLAY" );
@@ -297,7 +315,7 @@ int main( int argc, char *argv[] )
     hints.ai_socktype = SOCK_STREAM;
 
     if ( ( rv = getaddrinfo( host.c_str(),
-                             port_request.size() ? port_request.c_str() : "ssh",
+                             port.c_str(),
                              &hints,
                              &servinfo ) ) != 0 ) {
       die( "%s: Could not resolve hostname %s: getaddrinfo: %s",
@@ -442,6 +460,10 @@ int main( int argc, char *argv[] )
     ssh_args.push_back( proxy_arg );
     ssh_args.push_back( "-t" );
     ssh_args.push_back( userhost );
+    if ( ssh_port.size() ) {
+      ssh_args.push_back( "-p" );
+      ssh_args.push_back( ssh_port );
+    }
     ssh_args.push_back( "--" );
     ssh_args.push_back( ssh_remote_command );
 
