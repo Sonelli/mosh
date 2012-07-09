@@ -186,7 +186,7 @@ void NotificationEngine::apply( Framebuffer &fb ) const
   }
 
   /* write message */
-  wchar_t tmp[ 128 ];
+  char tmp[ 128 ];
 
   /* We want to prefer the "last contact" message if we simply haven't
      heard from the server in a while, but print the "last reply" message
@@ -208,28 +208,28 @@ void NotificationEngine::apply( Framebuffer &fb ) const
   if ( message.empty() && (!time_expired) ) {
     return;
   } else if ( message.empty() && time_expired ) {
-    swprintf( tmp, 128, L"mosh: Last %s %.0f seconds ago. [To quit: Ctrl-^ .]", explanation, time_elapsed );
+    snprintf( tmp, 128, "mosh: Last %s %.0f seconds ago. [To quit: Ctrl-^ .]", explanation, time_elapsed );
   } else if ( (!message.empty()) && (!time_expired) ) {
-    swprintf( tmp, 128, L"mosh: %ls [To quit: Ctrl-^ .]", message.c_str() );
+    snprintf( tmp, 128, "mosh: %s [To quit: Ctrl-^ .]", message.c_str() );
   } else {
-    swprintf( tmp, 128, L"mosh: %ls (%.0f s without %s.) [To quit: Ctrl-^ .]", message.c_str(),
+    snprintf( tmp, 128, "mosh: %s (%.0f s without %s.) [To quit: Ctrl-^ .]", message.c_str(),
 	      time_elapsed, explanation );
   }
 
-  wstring string_to_draw( tmp );
+  string string_to_draw( tmp );
 
   int overlay_col = 0;
 
   Cell *combining_cell = fb.get_mutable_cell( 0, 0 );
 
   /* We unfortunately duplicate the terminal's logic for how to render a Unicode sequence into graphemes */
-  for ( wstring::const_iterator i = string_to_draw.begin(); i != string_to_draw.end(); i++ ) {
+  for ( string::const_iterator i = string_to_draw.begin(); i != string_to_draw.end(); i++ ) {
     if ( overlay_col >= fb.ds.get_width() ) {
       break;
     }
 
     wchar_t ch = *i;
-    int chwidth = ch == L'\0' ? -1 : wcwidth( ch );
+    int chwidth = ch == L'\0' ? -1 : 1;
     Cell *this_cell = 0;
 
     switch ( chwidth ) {
