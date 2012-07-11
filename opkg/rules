@@ -9,8 +9,8 @@ case "$1" in
       ./autogen.sh
     fi
     NCURSES_INCLUDE=~/droid/data/local/include/ncurses/
-    ./configure --host=arm-linux --prefix=$BASEDIR \
-      CC=agcc CXX=ag++ LDFLAGS="-Wl,-dynamic-linker,$BASEDIR/bin/linker" \
+    ./configure --host=arm-linux --prefix=/$BASEDIR \
+      CC=agcc CXX=ag++ LDFLAGS="-Wl,-dynamic-linker,/$BASEDIR/bin/linker" \
       CXXFLAGS="-I$NCURSES_INCLUDE"
     # -lpthread comes from the cross-compiling machine's library requirements
     # -lutil is needed for forkpty on the cross-compiling machine
@@ -29,7 +29,7 @@ case "$1" in
     rm -rf $DESTDIR
     mkdir -p $DESTDIR
     make install DESTDIR=$DESTDIR
-    install -m755 src/frontend/mosh $DESTDIR$BASEDIR/bin/
+    install -m755 src/frontend/mosh $DESTDIR/$BASEDIR/bin/
     ;;
     
   clean)
