@@ -115,7 +115,24 @@ public:
     }
     // negative timeout means wait forever
 
+#ifdef __BIONIC__
+    // why? see https://groups.google.com/forum/#!msg/android-kernel/-QjGa3Y5JKM/Cny6Ae-9KrYJ
+    // short version: userland sigset_t size != kernel sigset_t size
+    sigset_t oldmask;
+    struct timeval tv, *tvp = NULL;
+
+    if( timeout >= 0) {
+      tv.tv_sec = timeout / 1000;
+      tv.tv_usec = 1000 * (long(timeout) % 1000);
+      tvp = &tv;
+    }
+
+    sigprocmask( SIG_SETMASK, &empty_sigset, &oldmask );
+    int ret = ::select(max_fd +1, &read_fds, NULL, &error_fds, tvp);
+    sigprocmask( SIG_SETMASK, &oldmask, NULL );
+#else
     int ret = ::pselect( max_fd + 1, &read_fds, NULL, &error_fds, tsp, &empty_sigset );
+#endif
 
     if ( ( ret == -1 ) && ( errno == EINTR ) ) {
       /* The user should process events as usual. */

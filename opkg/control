@@ -3,7 +3,7 @@ Section: shells
 Priority: optional
 Maintainer: Dan Drown <dan-android@drown.org>
 Package: mosh
-Version: ddrown-git2012.7.9
+Version: ddrown-git2012.7.10
 Architecture: arm
 Depends: linker, protobuf, ncurses, libgnustl-shared, openssh
 Description: Mosh is a remote terminal application that is designed to handle
