@@ -340,7 +340,7 @@ void STMClient::main( void )
            || sel.signal( SIGHUP )
            || sel.signal( SIGPIPE )
            || sel.signal( SIGTSTP )
-           || sel.signal( SIGCONT ) ) {
+         ) {
         /* shutdown signal */
         if ( !network->has_remote_addr() ) {
           break;
