@@ -39,9 +39,7 @@
 #include <errno.h>
 #include <string.h>
 #include <locale.h>
-#include <wchar.h>
 #include <assert.h>
-#include <wctype.h>
 #include <iostream>
 #include <typeinfo>
 #include <sys/ioctl.h>

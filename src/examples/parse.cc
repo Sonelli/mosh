@@ -39,9 +39,7 @@
 #include <errno.h>
 #include <string.h>
 #include <locale.h>
-#include <wchar.h>
 #include <assert.h>
-#include <wctype.h>
 #include <iostream>
 #include <typeinfo>
 #include <termios.h>
@@ -202,7 +200,7 @@ int vt_parser( int fd, Parser::UTF8Parser *parser )
       assert( act );
 
       if ( act->char_present ) {
-	if ( iswprint( act->ch ) ) {
+	if ( uni_isprint( act->ch ) ) {
 	  printf( "%s(0x%02x=%lc) ", act->name().c_str(), (unsigned int)act->ch, act->ch );
 	} else {
 	  printf( "%s(0x%02x) ", act->name().c_str(), (unsigned int)act->ch );

@@ -531,7 +531,7 @@ void Dispatcher::OSC_dispatch( const Parser::OSC_End *act, Framebuffer *fb )
 	   || (OSC_string[ 0 ] == L'1')
 	   || (OSC_string[ 0 ] == L'2') )
 	 && (OSC_string[ 1 ] == L';') ) {
-      std::deque<wchar_t> newtitle( OSC_string.begin(), OSC_string.end() );
+      std::deque<unichar_t> newtitle( OSC_string.begin(), OSC_string.end() );
       newtitle.erase( newtitle.begin() );
       newtitle.erase( newtitle.begin() );
 

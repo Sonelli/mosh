@@ -36,7 +36,6 @@
 /* Based on Paul Williams's parser,
    http://www.vt100.net/emu/dec_ansi_parser */
 
-#include <wchar.h>
 #include <list>
 #include <string.h>
 
@@ -59,7 +58,7 @@ namespace Parser {
     Parser & operator=( const Parser & );
     ~Parser() {}
 
-    std::list<Action *> input( wchar_t ch );
+    std::list<Action *> input( unichar_t ch );
 
     bool operator==( const Parser &x ) const
     {

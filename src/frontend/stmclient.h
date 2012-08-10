@@ -57,7 +57,7 @@ private:
   Network::Transport< Network::UserStream, Terminal::Complete > *network;
   Terminal::Display display;
 
-  std::wstring connecting_notification;
+  std::string connecting_notification;
   bool repaint_requested, quit_sequence_started;
   bool clean_shutdown;
 

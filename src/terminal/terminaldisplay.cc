@@ -64,11 +64,11 @@ std::string Display::new_frame( bool initialized, const Framebuffer &last, const
     if ( f.get_icon_name() == f.get_window_title() ) {
       /* write combined Icon Name and Window Title */
       frame.append( "\033]0;" );
-      const std::deque<wchar_t> &window_title( f.get_window_title() );
-      for ( std::deque<wchar_t>::const_iterator i = window_title.begin();
+      const std::deque<unichar_t> &window_title( f.get_window_title() );
+      for ( std::deque<unichar_t>::const_iterator i = window_title.begin();
             i != window_title.end();
             i++ ) {
-	snprintf( tmp, 64, "%lc", *i );
+	uni_ucs4_to_utf8_c( *i, tmp, 64 );
 	frame.append( tmp );
       }
       frame.append( "\007" );
@@ -76,21 +76,21 @@ std::string Display::new_frame( bool initialized, const Framebuffer &last, const
     } else {
       /* write Icon Name */
       frame.append( "\033]1;" );
-      const std::deque<wchar_t> &icon_name( f.get_icon_name() );
-      for ( std::deque<wchar_t>::const_iterator i = icon_name.begin();
+      const std::deque<unichar_t> &icon_name( f.get_icon_name() );
+      for ( std::deque<unichar_t>::const_iterator i = icon_name.begin();
 	    i != icon_name.end();
 	    i++ ) {
-	snprintf( tmp, 64, "%lc", *i );
+	uni_ucs4_to_utf8_c( *i, tmp, 64 );
 	frame.append( tmp );
       }
       frame.append( "\007" );
 
       frame.append( "\033]2;" );
-      const std::deque<wchar_t> &window_title( f.get_window_title() );
-      for ( std::deque<wchar_t>::const_iterator i = window_title.begin();
+      const std::deque<unichar_t> &window_title( f.get_window_title() );
+      for ( std::deque<unichar_t>::const_iterator i = window_title.begin();
 	    i != window_title.end();
 	    i++ ) {
-	snprintf( tmp, 64, "%lc", *i );
+	uni_ucs4_to_utf8_c( *i, tmp, 64 );
 	frame.append( tmp );
       }
       frame.append( "\007" );
@@ -358,10 +358,10 @@ void Display::put_cell( bool initialized, FrameState &frame, const Framebuffer &
     frame.append( "\xC2\xA0" );
   }
 
-  for ( std::vector<wchar_t>::const_iterator i = cell->contents.begin();
+  for ( std::vector<unichar_t>::const_iterator i = cell->contents.begin();
 	i != cell->contents.end();
 	i++ ) {
-    snprintf( tmp, 64, "%lc", *i );
+    uni_ucs4_to_utf8_c( *i, tmp, 64 );
     frame.append( tmp );
   }
 

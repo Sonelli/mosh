@@ -34,6 +34,7 @@
 #define LOCALE_UTILS_HPP
 
 #include <string>
+#include "unichar.h"
 
 class LocaleVar {
  public:

@@ -552,25 +552,25 @@ void Row::reset( int background_color )
   }
 }
 
-void Framebuffer::prefix_window_title( const std::deque<wchar_t> &s )
+void Framebuffer::prefix_window_title( const std::deque<unichar_t> &s )
 {
   if ( icon_name == window_title ) {
     /* preserve equivalence */
-    for ( std::deque<wchar_t>::const_reverse_iterator i = s.rbegin();
+    for ( std::deque<unichar_t>::const_reverse_iterator i = s.rbegin();
           i != s.rend();
           i++ ) {
       icon_name.push_front( *i );
     }
   }
 
-  for ( std::deque<wchar_t>::const_reverse_iterator i = s.rbegin();
+  for ( std::deque<unichar_t>::const_reverse_iterator i = s.rbegin();
         i != s.rend();
         i++ ) {
     window_title.push_front( *i );
   }
 }
 
-wchar_t Cell::debug_contents( void ) const
+unichar_t Cell::debug_contents( void ) const
 {
   if ( contents.empty() ) {
     return '_';

@@ -34,6 +34,7 @@
 #define PARSERACTION_HPP
 
 #include <string>
+#include "unichar.h"
 
 namespace Terminal {
   class Emulator;
@@ -44,7 +45,7 @@ namespace Parser {
   {
   public:
     bool char_present;
-    wchar_t ch;
+    unichar_t ch;
     mutable bool handled;
 
     std::string str( void );

@@ -33,7 +33,6 @@
 #include <assert.h>
 #include <typeinfo>
 #include <errno.h>
-#include <wchar.h>
 #include <stdint.h>
 
 #include "parser.h"
@@ -52,7 +51,7 @@ static void append_or_delete( Parser::Action *act,
   }
 }
 
-std::list<Parser::Action *> Parser::Parser::input( wchar_t ch )
+std::list<Parser::Action *> Parser::Parser::input( unichar_t ch )
 {
   std::list<Action *> ret;
 
@@ -86,9 +85,7 @@ std::list<Parser::Action *> Parser::UTF8Parser::input( char c )
 
   /* This function will only work in a UTF-8 locale. */
 
-  wchar_t pwc;
-  mbstate_t ps;
-  memset( &ps, 0, sizeof( ps ) );
+  unichar_t pwc;
 
   size_t total_bytes_parsed = 0;
   size_t orig_buf_len = buf_len;
@@ -100,7 +97,20 @@ std::list<Parser::Action *> Parser::UTF8Parser::input( char c )
   while ( total_bytes_parsed != orig_buf_len ) {
     assert( total_bytes_parsed < orig_buf_len );
     assert( buf_len > 0 );
-    size_t bytes_parsed = mbrtowc( &pwc, buf, buf_len, &ps );
+    size_t bytes_parsed;
+    if ( buf[0] == '\0' )
+      bytes_parsed = 0;
+    else {
+      int ret = uni_utf8_get_char_n( buf, buf_len, &pwc );
+      if ( ret > 0 )
+	bytes_parsed = uni_utf8_char_bytes( buf[0] );
+      else if ( ret == 0 )
+	bytes_parsed = (size_t) -2;
+      else {
+	bytes_parsed = (size_t) -1;
+	errno = EILSEQ;
+      }
+    }
 
     /* this returns 0 when n = 0! */
 
@@ -124,7 +134,7 @@ std::list<Parser::Action *> Parser::UTF8Parser::input( char c )
 	buf_len = 0;
 	bytes_parsed = 1;
       }
-      pwc = (wchar_t) 0xFFFD;
+      pwc = (unichar_t) 0xFFFD;
     } else if ( bytes_parsed == (size_t) -2 ) {
       /* can't parse incomplete multibyte character */
       total_bytes_parsed += buf_len;
@@ -144,7 +154,7 @@ std::list<Parser::Action *> Parser::UTF8Parser::input( char c )
     uint64_t pwcheck = pwc;
 
     if ( pwcheck > 0x10FFFF ) { /* outside Unicode range */
-      pwc = (wchar_t) 0xFFFD;
+      pwc = (unichar_t) 0xFFFD;
     }
 
     if ( (pwcheck >= 0xD800) && (pwcheck <= 0xDFFF) ) { /* surrogate code point */
@@ -153,7 +163,7 @@ std::list<Parser::Action *> Parser::UTF8Parser::input( char c )
 	they are ill-formed UTF-8 and we shouldn't repeat them to the
 	user's terminal.
       */
-      pwc = (wchar_t) 0xFFFD;
+      pwc = (unichar_t) 0xFFFD;
     }
 
     std::list<Action *> vec = parser.input( pwc );

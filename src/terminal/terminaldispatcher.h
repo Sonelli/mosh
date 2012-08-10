@@ -36,6 +36,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include "unichar.h"
 
 namespace Parser {
   class Action;
@@ -86,7 +87,7 @@ namespace Terminal {
     bool parsed;
 
     std::string dispatch_chars;
-    std::vector<wchar_t> OSC_string; /* only used to set the window title */
+    std::vector<unichar_t> OSC_string; /* only used to set the window title */
 
     void parse_params( void );
 
@@ -108,7 +109,7 @@ namespace Terminal {
 
     void dispatch( Function_Type type, const Parser::Action *act, Framebuffer *fb );
     std::string get_dispatch_chars( void ) { return dispatch_chars; }
-    std::vector<wchar_t> get_OSC_string( void ) { return OSC_string; }
+    std::vector<unichar_t> get_OSC_string( void ) { return OSC_string; }
 
     void OSC_put( const Parser::OSC_Put *act );
     void OSC_start( const Parser::OSC_Start *act );

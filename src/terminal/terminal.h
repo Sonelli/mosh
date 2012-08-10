@@ -33,7 +33,6 @@
 #ifndef TERMINAL_CPP
 #define TERMINAL_CPP
 
-#include <wchar.h>
 #include <stdio.h>
 #include <vector>
 #include <deque>

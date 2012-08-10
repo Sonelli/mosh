@@ -31,7 +31,6 @@
 */
 
 #include <stdio.h>
-#include <wctype.h>
 
 #include "parseraction.h"
 #include "terminal.h"
@@ -42,8 +41,8 @@ std::string Action::str( void )
 {
   char thechar[ 10 ] = { 0 };
   if ( char_present ) {
-    if ( iswprint( ch ) )
-      snprintf( thechar, 10, "(%lc)", ch );
+    if ( uni_isprint( ch ) )
+      uni_ucs4_to_utf8_c( ch, thechar, ch );
     else
       snprintf( thechar, 10, "(0x%x)", (unsigned int)ch );
   }

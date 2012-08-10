@@ -61,7 +61,7 @@ void Emulator::print( const Parser::Print *act )
 {
   assert( act->char_present );
 
-  int chwidth = act->ch == L'\0' ? -1 : wcwidth( act->ch );
+  int chwidth = act->ch == L'\0' ? -1 : uni_char_width( act->ch );
 
   Cell *this_cell = fb.get_mutable_cell();
 
