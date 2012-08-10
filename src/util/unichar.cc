@@ -122,13 +122,10 @@ void uni_ucs4_to_utf8_c(unichar_t chr, char *output, size_t size)
 #ifdef UNICHAR_TYPE_ENABLED
 int uni_isprint(unichar_t c)
 {
-  return c >= ' ';
-}
-
-int uni_char_width(unichar_t c)
-{
-  if (!uni_isprint(c))
-    return -1;
-  return c == '\0' ? 0 : 1;
+  if (c < ' ')
+    return 0;
+  if (c == 0xc0 || c == 0xc1)
+    return 0;
+  return 1;
 }
 #endif
