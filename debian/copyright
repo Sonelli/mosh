@@ -4,7 +4,7 @@ Source: http://github.com/keithw/mosh
 
 Files: *
 Copyright: 2012 Keith Winstein <mosh-devel@mit.edu>
-License: GPL-3+
+License: GPL-3+ with OpenSSL exception
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,20 @@ License: GPL-3+
  .
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ .
+ In addition, as a special exception, the copyright holders give
+ permission to link the code of portions of this program with the
+ OpenSSL library under certain conditions as described in each
+ individual source file, and distribute linked combinations including
+ the two.
+ .
+ You must obey the GNU General Public License in all respects for all
+ of the code used other than OpenSSL. If you modify file(s) with this
+ exception, you may extend this exception to your version of the
+ file(s), but you are not obligated to do so. If you do not wish to do
+ so, delete this exception statement from your version. If you delete
+ this exception statement from all source files in the program, then
+ also delete it here.
  .
  On Debian systems, the complete text of the GNU General
  Public License version 3 can be found in "/usr/share/common-licenses/GPL-3".
@@ -133,44 +147,3 @@ License: public-domain
  warranty of any kind. Use at your own risk.
  .
  Comments are welcome: Ted Krovetz <ted@krovetz>.
-
-Files: src/crypto/rijndael-alg-fst.*
-Copyright: none
-License: public-domain
- @author Vincent Rijmen <vincent.rijmen@esat.kuleuven.ac.be>
- @author Antoon Bosselaers <antoon.bosselaers@esat.kuleuven.ac.be>
- @author Paulo Barreto <paulo.barreto@terra.com.br>
- .
- This code is hereby placed in the public domain.
- .
- THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
- OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE
- LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
- BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
- OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-Files: src/crypto/base64.*
-Copyright: 1999-2001, 2004-2006, 2009-2011 Free Software Foundation, Inc.
-License: GPL3+
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 3, or (at your option)
- any later version.
- .
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- .
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software Foundation,
- Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- .
- On Debian systems, the complete text of the GNU General
- Public License version 3 can be found in "/usr/share/common-licenses/GPL-3".

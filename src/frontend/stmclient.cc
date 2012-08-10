@@ -14,6 +14,20 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    In addition, as a special exception, the copyright holders give
+    permission to link the code of portions of this program with the
+    OpenSSL library under certain conditions as described in each
+    individual source file, and distribute linked combinations including
+    the two.
+
+    You must obey the GNU General Public License in all respects for all
+    of the code used other than OpenSSL. If you modify file(s) with this
+    exception, you may extend this exception to your version of the
+    file(s), but you are not obligated to do so. If you do not wish to do
+    so, delete this exception statement from your version. If you delete
+    this exception statement from all source files in the program, then
+    also delete it here.
 */
 
 #include "config.h"
@@ -43,6 +57,7 @@
 #include "fatal_assert.h"
 #include "locale_utils.h"
 #include "select.h"
+#include "timestamp.h"
 
 #include "networktransport.cc"
 
@@ -87,7 +102,7 @@ void STMClient::init( void )
 
   /* Add our name to window title */
   if ( !getenv( "MOSH_TITLE_NOPREFIX" ) ) {
-    overlays.set_title_prefix( wstring( L"[mosh] " ) );
+    overlays.set_title_prefix( string( "[mosh] " ) );
   }
 
   char tmp[ 128 ];
@@ -100,7 +115,7 @@ void STMClient::shutdown( void )
   /* Restore screen state */
   overlays.get_notification_engine().set_notification_string( string( "" ) );
   overlays.get_notification_engine().server_heard( timestamp() );
-  overlays.set_title_prefix( wstring( L"" ) );
+  overlays.set_title_prefix( string( "" ) );
   output_new_frame();
 
   /* Restore terminal and terminal-driver state */
@@ -417,6 +432,7 @@ void STMClient::main( void )
       req.tv_sec = 0;
       req.tv_nsec = 200000000; /* 0.2 sec */
       nanosleep( &req, NULL );
+      freeze_timestamp();
     } catch ( Crypto::CryptoException e ) {
       if ( e.fatal ) {
         throw;

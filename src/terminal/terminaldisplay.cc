@@ -14,6 +14,20 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    In addition, as a special exception, the copyright holders give
+    permission to link the code of portions of this program with the
+    OpenSSL library under certain conditions as described in each
+    individual source file, and distribute linked combinations including
+    the two.
+
+    You must obey the GNU General Public License in all respects for all
+    of the code used other than OpenSSL. If you modify file(s) with this
+    exception, you may extend this exception to your version of the
+    file(s), but you are not obligated to do so. If you do not wish to do
+    so, delete this exception statement from your version. If you delete
+    this exception statement from all source files in the program, then
+    also delete it here.
 */
 
 #include <stdio.h>
@@ -50,35 +64,36 @@ std::string Display::new_frame( bool initialized, const Framebuffer &last, const
     if ( f.get_icon_name() == f.get_window_title() ) {
       /* write combined Icon Name and Window Title */
       frame.append( "\033]0;" );
-      const std::deque<wchar_t> &window_title( f.get_window_title() );
-      for ( std::deque<wchar_t>::const_iterator i = window_title.begin();
+      const std::deque<unichar_t> &window_title( f.get_window_title() );
+      for ( std::deque<unichar_t>::const_iterator i = window_title.begin();
             i != window_title.end();
             i++ ) {
-	snprintf( tmp, 64, "%lc", *i );
+	uni_ucs4_to_utf8_c( *i, tmp, 64 );
 	frame.append( tmp );
       }
-      frame.append( "\033\\" );
+      frame.append( "\007" );
+      /* ST is more correct, but BEL more widely supported */
     } else {
       /* write Icon Name */
       frame.append( "\033]1;" );
-      const std::deque<wchar_t> &icon_name( f.get_icon_name() );
-      for ( std::deque<wchar_t>::const_iterator i = icon_name.begin();
+      const std::deque<unichar_t> &icon_name( f.get_icon_name() );
+      for ( std::deque<unichar_t>::const_iterator i = icon_name.begin();
 	    i != icon_name.end();
 	    i++ ) {
-	snprintf( tmp, 64, "%lc", *i );
+	uni_ucs4_to_utf8_c( *i, tmp, 64 );
 	frame.append( tmp );
       }
-      frame.append( "\033\\" );
+      frame.append( "\007" );
 
       frame.append( "\033]2;" );
-      const std::deque<wchar_t> &window_title( f.get_window_title() );
-      for ( std::deque<wchar_t>::const_iterator i = window_title.begin();
+      const std::deque<unichar_t> &window_title( f.get_window_title() );
+      for ( std::deque<unichar_t>::const_iterator i = window_title.begin();
 	    i != window_title.end();
 	    i++ ) {
-	snprintf( tmp, 64, "%lc", *i );
+	uni_ucs4_to_utf8_c( *i, tmp, 64 );
 	frame.append( tmp );
       }
-      frame.append( "\033\\" );
+      frame.append( "\007" );
     }
 
   }
@@ -343,10 +358,10 @@ void Display::put_cell( bool initialized, FrameState &frame, const Framebuffer &
     frame.append( "\xC2\xA0" );
   }
 
-  for ( std::vector<wchar_t>::const_iterator i = cell->contents.begin();
+  for ( std::vector<unichar_t>::const_iterator i = cell->contents.begin();
 	i != cell->contents.end();
 	i++ ) {
-    snprintf( tmp, 64, "%lc", *i );
+    uni_ucs4_to_utf8_c( *i, tmp, 64 );
     frame.append( tmp );
   }
 

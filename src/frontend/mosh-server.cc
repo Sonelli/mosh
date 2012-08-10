@@ -14,6 +14,20 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    In addition, as a special exception, the copyright holders give
+    permission to link the code of portions of this program with the
+    OpenSSL library under certain conditions as described in each
+    individual source file, and distribute linked combinations including
+    the two.
+
+    You must obey the GNU General Public License in all respects for all
+    of the code used other than OpenSSL. If you modify file(s) with this
+    exception, you may extend this exception to your version of the
+    file(s), but you are not obligated to do so. If you do not wish to do
+    so, delete this exception statement from your version. If you delete
+    this exception statement from all source files in the program, then
+    also delete it here.
 */
 
 #include "config.h"
@@ -51,6 +65,7 @@
 #include "locale_utils.h"
 #include "select.h"
 #include "pty.h"
+#include "timestamp.h"
 
 #if HAVE_PTY_H
 #include <pty.h>
@@ -88,6 +103,7 @@ void print_usage( const char *argv0 )
 void print_motd( void );
 void chdir_homedir( void );
 bool motd_hushed( void );
+void warn_unattached( const char *ignore_entry );
 
 /* Simple spinloop */
 void spin( void )
@@ -100,19 +116,36 @@ void spin( void )
     req.tv_sec = 0;
     req.tv_nsec = 100000000; /* 0.1 sec */
     nanosleep( &req, NULL );
+    freeze_timestamp();
   }
 }
 
 string get_SSH_IP( void )
 {
   const char *SSH_CONNECTION = getenv( "SSH_CONNECTION" );
-  fatal_assert( SSH_CONNECTION );
+  if ( !SSH_CONNECTION ) { /* Older sshds don't set this */
+    fprintf( stderr, "Warning: SSH_CONNECTION not found; binding to any interface.\n" );
+    return string( "0.0.0.0" );
+  }
   char *SSH_writable = strdup( SSH_CONNECTION );
   fatal_assert( SSH_writable );
+
   strtok( SSH_writable, " " );
   strtok( NULL, " " );
   const char *local_interface_IP = strtok( NULL, " " );
-  fatal_assert( local_interface_IP );
+  if ( !local_interface_IP ) {
+    fprintf( stderr, "Warning: Could not parse SSH_CONNECTION; binding to any interface.\n" );
+    return string( "0.0.0.0" );
+  }
+
+  /* Strip IPv6 prefix. */
+  const char IPv6_prefix[] = "::ffff:";
+
+  if ( ( strlen( local_interface_IP ) > strlen( IPv6_prefix ) )
+       && ( 0 == strncasecmp( local_interface_IP, IPv6_prefix, strlen( IPv6_prefix ) ) ) ) {
+    return string( local_interface_IP + strlen( IPv6_prefix ) );
+  }
+
   return string( local_interface_IP );
 }
 
@@ -367,6 +400,14 @@ int run_server( const char *desired_ip, const char *desired_port,
     close( STDERR_FILENO );
   }
 
+  char utmp_entry[ 64 ] = { 0 };
+
+#ifdef HAVE_UTEMPTER
+  /* make utmp entry */
+  snprintf( utmp_entry, 64, "mosh [%d]", getpid() );
+  utempter_add_record( master, utmp_entry );
+#endif
+
   /* Fork child process */
   pid_t child = forkpty( &master, NULL, &child_termios, &window_size );
 
@@ -414,6 +455,7 @@ int run_server( const char *desired_ip, const char *desired_port,
 
     if ( with_motd && (!motd_hushed()) ) {
       print_motd();
+      warn_unattached( utmp_entry );
     }
 
     Crypto::reenable_dumping_core();
@@ -424,13 +466,6 @@ int run_server( const char *desired_ip, const char *desired_port,
     }
   } else {
     /* parent */
-
-    #ifdef HAVE_UTEMPTER
-    /* make utmp entry */
-    char tmp[ 64 ];
-    snprintf( tmp, 64, "mosh [%d]", getpid() );
-    utempter_add_record( master, tmp );
-    #endif
 
     try {
       serve( master, terminal, *network );
@@ -720,4 +755,73 @@ bool motd_hushed( void )
   /* must be in home directory already */
   struct stat buf;
   return (0 == lstat( ".hushlogin", &buf ));
+}
+
+string mosh_read_line( FILE *file )
+{
+  string ret;
+  while ( !feof( file ) ) {
+    char next = getc( file );
+    if ( next == '\n' ) {
+      return ret;
+    }
+    ret.push_back( next );
+  }
+  return ret;
+}
+
+void warn_unattached( const char *ignore_entry )
+{
+  /* get username */
+  const struct passwd *pw = getpwuid( geteuid() );
+  if ( pw == NULL ) {
+    perror( "getpwuid" );
+    /* non-fatal */
+    return;
+  }
+
+  const string username( pw->pw_name );
+
+  /* look for unattached sessions */
+  FILE *who_cmd = popen( "who", "r" );
+
+  if ( who_cmd == NULL ) {
+    return;
+  }
+
+  vector< string > unattached_who_lines;
+
+  while ( !feof( who_cmd ) ) {
+    /* read the line */
+    const string line = mosh_read_line( who_cmd );
+
+    /* does line start with username? */
+    if ( line.substr( 0, username.size() + 1 ) == username + " " ) {
+      /* does line show unattached mosh session? */
+      if ( line.npos != line.find( "(mosh" ) ) {
+	/* is line showing _this_ mosh session? */
+	const string our_entry = string( "(" ) + ignore_entry + string( ")" );
+	if ( line.npos == line.find( our_entry ) ) {
+	  unattached_who_lines.push_back( line );
+	}
+      }
+    }
+  }
+
+  /* print out warning if necessary */
+  if ( unattached_who_lines.empty() ) {
+    return;
+  } else if ( unattached_who_lines.size() == 1 ) {
+    printf( "\nNote: This Mosh server is detached.\n" );
+  } else {
+    printf( "\nNote: These Mosh servers are detached.\n" );
+  }
+
+  for ( vector< string >::const_iterator it = unattached_who_lines.begin();
+	it != unattached_who_lines.end();
+	it++ ) {
+    printf( "| %s\n", it->c_str() );
+  }
+
+  printf( "\n" );
 }

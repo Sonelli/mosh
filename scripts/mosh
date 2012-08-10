@@ -15,6 +15,20 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#   In addition, as a special exception, the copyright holders give
+#   permission to link the code of portions of this program with the
+#   OpenSSL library under certain conditions as described in each
+#   individual source file, and distribute linked combinations including
+#   the two.
+#
+#   You must obey the GNU General Public License in all respects for all
+#   of the code used other than OpenSSL. If you modify file(s) with this
+#   exception, you may extend this exception to your version of the
+#   file(s), but you are not obligated to do so. If you do not wish to do
+#   so, delete this exception statement from your version. If you delete
+#   this exception statement from all source files in the program, then
+#   also delete it here.
 
 my $MOSH_VERSION = '1.2.2';
 
@@ -163,6 +177,9 @@ if ( defined $fake_proxy ) {
     or die "$0: socket for host $ip port $port: $!\n";
   $sock->connect($res->{addr})
     or die "$0: connect to host $ip port $port: $!\n";
+  binmode($sock);
+  binmode(STDIN);
+  binmode(STDOUT);
 
   sub cat {
     my ( $from, $to ) = @_;
@@ -247,6 +264,9 @@ if ( $pid == 0 ) { # child
   LINE: while ( <$pty_slave> ) {
     chomp;
     if ( m{^MOSH IP } ) {
+      if ( defined $ip ) {
+	die "$0 error: detected attempt to redefine MOSH IP.\n";
+      }
       ( $ip ) = m{^MOSH IP (\S+)\s*$} or die "Bad MOSH IP string: $_\n";
     } elsif ( m{^MOSH CONNECT } ) {
       if ( ( $port, $key ) = m{^MOSH CONNECT (\d+?) ([A-Za-z0-9/+]{22})\s*$} ) {

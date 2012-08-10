@@ -14,10 +14,23 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    In addition, as a special exception, the copyright holders give
+    permission to link the code of portions of this program with the
+    OpenSSL library under certain conditions as described in each
+    individual source file, and distribute linked combinations including
+    the two.
+
+    You must obey the GNU General Public License in all respects for all
+    of the code used other than OpenSSL. If you modify file(s) with this
+    exception, you may extend this exception to your version of the
+    file(s), but you are not obligated to do so. If you do not wish to do
+    so, delete this exception statement from your version. If you delete
+    this exception statement from all source files in the program, then
+    also delete it here.
 */
 
 #include <algorithm>
-#include <wchar.h>
 #include <list>
 #include <typeinfo>
 #include <limits.h>
@@ -216,20 +229,20 @@ void NotificationEngine::apply( Framebuffer &fb ) const
 	      time_elapsed, explanation );
   }
 
-  string string_to_draw( tmp );
-
   int overlay_col = 0;
 
   Cell *combining_cell = fb.get_mutable_cell( 0, 0 );
 
   /* We unfortunately duplicate the terminal's logic for how to render a Unicode sequence into graphemes */
-  for ( string::const_iterator i = string_to_draw.begin(); i != string_to_draw.end(); i++ ) {
+  unsigned int pos = 0, tmp_len = strlen( tmp );
+  unichar_t ch;
+  while ( uni_utf8_get_char_n( tmp+pos, tmp_len-pos, &ch ) > 0 ) {
     if ( overlay_col >= fb.ds.get_width() ) {
       break;
     }
 
-    wchar_t ch = *i;
-    int chwidth = ch == L'\0' ? -1 : 1;
+    pos += uni_utf8_char_bytes( tmp[pos] );
+    int chwidth = ch == L'\0' ? -1 : uni_char_width( ch );
     Cell *this_cell = 0;
 
     switch ( chwidth ) {
@@ -307,9 +320,16 @@ void OverlayManager::apply( Framebuffer &fb )
   title.apply( fb );
 }
 
-void TitleEngine::set_prefix( const wstring s )
+void TitleEngine::set_prefix( const string s )
 {
-  prefix = deque<wchar_t>( s.begin(), s.end() );
+  const char *cs = s.c_str();
+  size_t pos = 0, cs_len = s.length();
+  unichar_t c;
+
+  while ( uni_utf8_get_char_n( cs+pos, cs_len-pos, &c ) > 0 ) {
+    pos += uni_utf8_char_bytes( cs[pos] );
+    prefix.push_back( c );
+  }
 }
 
 void ConditionalOverlayRow::apply( Framebuffer &fb, uint64_t confirmed_epoch, bool flag ) const
@@ -637,7 +657,7 @@ void PredictionEngine::new_user_byte( char the_byte, const Framebuffer &fb )
 
       assert( act->char_present );
 
-      wchar_t ch = act->ch;
+      unichar_t ch = act->ch;
       /* XXX handle wide characters */
 
       if ( ch == 0x7f ) { /* backspace */
@@ -677,7 +697,7 @@ void PredictionEngine::new_user_byte( char the_byte, const Framebuffer &fb )
 	    }
 	  }
 	}
-      } else if ( (ch < 0x20) || (wcwidth( ch ) != 1) ) {
+      } else if ( (ch < 0x20) || (uni_char_width( ch ) != 1) ) {
 	/* unknown print */
 	become_tentative();
 	//	fprintf( stderr, "Unknown print 0x%x\n", ch );

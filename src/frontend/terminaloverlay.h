@@ -14,6 +14,20 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    In addition, as a special exception, the copyright holders give
+    permission to link the code of portions of this program with the
+    OpenSSL library under certain conditions as described in each
+    individual source file, and distribute linked combinations including
+    the two.
+
+    You must obey the GNU General Public License in all respects for all
+    of the code used other than OpenSSL. If you modify file(s) with this
+    exception, you may extend this exception to your version of the
+    file(s), but you are not obligated to do so. If you do not wish to do
+    so, delete this exception statement from your version. If you delete
+    this exception statement from all source files in the program, then
+    also delete it here.
 */
 
 #ifndef TERMINAL_OVERLAY_HPP
@@ -32,7 +46,7 @@ namespace Overlay {
   using std::deque;
   using std::list;
   using std::vector;
-  using std::wstring;
+  using std::string;
 
   enum Validity {
     Pending,
@@ -284,11 +298,11 @@ namespace Overlay {
 
   class TitleEngine {
   private:
-    deque<wchar_t> prefix;
+    deque<unichar_t> prefix;
 
   public:
     void apply( Framebuffer &fb ) const { fb.prefix_window_title( prefix ); }
-    void set_prefix( const wstring s );
+    void set_prefix( const string s );
     TitleEngine() : prefix() {}
   };
 
@@ -305,7 +319,7 @@ namespace Overlay {
     NotificationEngine & get_notification_engine( void ) { return notifications; }
     PredictionEngine & get_prediction_engine( void ) { return predictions; }
 
-    void set_title_prefix( const wstring s ) { title.set_prefix( s ); }
+    void set_title_prefix( const string s ) { title.set_prefix( s ); }
 
     OverlayManager() : notifications(), predictions(), title() {}
 

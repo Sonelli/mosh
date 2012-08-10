@@ -14,6 +14,20 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    In addition, as a special exception, the copyright holders give
+    permission to link the code of portions of this program with the
+    OpenSSL library under certain conditions as described in each
+    individual source file, and distribute linked combinations including
+    the two.
+
+    You must obey the GNU General Public License in all respects for all
+    of the code used other than OpenSSL. If you modify file(s) with this
+    exception, you may extend this exception to your version of the
+    file(s), but you are not obligated to do so. If you do not wish to do
+    so, delete this exception statement from your version. If you delete
+    this exception statement from all source files in the program, then
+    also delete it here.
 */
 
 #ifndef TERMINALFB_HPP
@@ -24,6 +38,7 @@
 #include <string>
 #include <list>
 #include <assert.h>
+#include "unichar.h"
 
 /* Terminal framebuffer */
 
@@ -53,7 +68,7 @@ namespace Terminal {
 
   class Cell {
   public:
-    std::vector<wchar_t> contents;
+    std::vector<unichar_t> contents;
     char fallback; /* first character is combining character */
     int width;
     Renditions renditions;
@@ -88,7 +103,7 @@ namespace Terminal {
 	       && (wrap == x.wrap) );
     }
 
-    wchar_t debug_contents( void ) const;
+    unichar_t debug_contents( void ) const;
 
     bool is_blank( void ) const
     {
@@ -231,8 +246,8 @@ namespace Terminal {
   private:
     typedef std::deque<Row> rows_type;
     rows_type rows;
-    std::deque<wchar_t> icon_name;
-    std::deque<wchar_t> window_title;
+    std::deque<unichar_t> icon_name;
+    std::deque<unichar_t> window_title;
     unsigned int bell_count;
 
     Row newrow( void ) { return Row( ds.get_width(), ds.get_background_rendition() ); }
@@ -297,12 +312,12 @@ namespace Terminal {
     void reset( void );
     void soft_reset( void );
 
-    void set_icon_name( const std::deque<wchar_t> &s ) { icon_name = s; }
-    void set_window_title( const std::deque<wchar_t> &s ) { window_title = s; }
-    const std::deque<wchar_t> & get_icon_name( void ) const { return icon_name; }
-    const std::deque<wchar_t> & get_window_title( void ) const { return window_title; }
+    void set_icon_name( const std::deque<unichar_t> &s ) { icon_name = s; }
+    void set_window_title( const std::deque<unichar_t> &s ) { window_title = s; }
+    const std::deque<unichar_t> & get_icon_name( void ) const { return icon_name; }
+    const std::deque<unichar_t> & get_window_title( void ) const { return window_title; }
 
-    void prefix_window_title( const std::deque<wchar_t> &s );
+    void prefix_window_title( const std::deque<unichar_t> &s );
 
     void resize( int s_width, int s_height );
 

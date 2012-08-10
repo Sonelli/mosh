@@ -30,18 +30,12 @@
     also delete it here.
 */
 
-#include "select.h"
+#ifndef TIMESTAMP_HPP
+#define TIMESTAMP_HPP
 
-fd_set Select::dummy_fd_set;
+#include <stdint.h>
 
-sigset_t Select::dummy_sigset;
+void freeze_timestamp( void );
+uint64_t frozen_timestamp( void );
 
-void Select::handle_signal( int signum )
-{
-  fatal_assert( signum >= 0 );
-  fatal_assert( signum <= MAX_SIGNAL_NUMBER );
-
-  Select &sel = get_instance();
-  sel.got_signal[ signum ] = 1;
-  sel.got_any_signal = 1;
-}
+#endif
