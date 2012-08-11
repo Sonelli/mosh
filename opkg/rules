@@ -9,6 +9,8 @@ case "$1" in
       ./autogen.sh
     fi
     NCURSES_INCLUDE=~/droid/data/local/include/ncurses/
+    export OPENSSL_CFLAGS=-I${HOME}/droid/data/local/include/openssl/
+    export OPENSSL_LIBS="-lssl -lcrypto"
     ./configure --host=arm-linux --prefix=/$BASEDIR \
       CC=agcc CXX=ag++ LDFLAGS="-Wl,-dynamic-linker,/$BASEDIR/bin/linker" \
       CXXFLAGS="-I$NCURSES_INCLUDE"
