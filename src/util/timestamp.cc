@@ -30,74 +30,69 @@
     also delete it here.
 */
 
-#ifndef PRNG_HPP
-#define PRNG_HPP
+#include "config.h"
 
-#include <string>
-#include <stdio.h>
+#include "timestamp.h"
+
 #include <errno.h>
-#include <string.h>
-#include <stdint.h>
 
-#include "crypto.h"
-
-/* Read random bytes from /dev/urandom.
-
-   We rely on stdio buffering for efficiency. */
-
-static const char rdev[] = "/dev/urandom";
-
-using namespace Crypto;
-
-class PRNG {
- private:
-  FILE *randfile;
-
-  /* unimplemented to satisfy -Weffc++ */
-  PRNG( const PRNG & );
-  PRNG & operator=( const PRNG & );
-
- public:
-  PRNG() : randfile( fopen( rdev, "rb" ) )
-  {
-    if ( randfile == NULL ) {
-      throw CryptoException( std::string( rdev ) + ": " + strerror( errno ) );
-    }
-  }
-
-  ~PRNG() {
-    if ( 0 != fclose( randfile ) ) {
-      throw CryptoException( std::string( rdev ) + ": " + strerror( errno ) );
-    }
-  }
-
-  void fill( void *dest, size_t size ) {
-    if ( 0 == size ) {
-      return;
-    }
-
-    if ( 1 != fread( dest, size, 1, randfile ) ) {
-      throw CryptoException( "Could not read from " + std::string( rdev ) );
-    }
-  }
-
-  uint8_t uint8() {
-    uint8_t x;
-    fill( &x, 1 );
-    return x;
-  }
-
-  uint32_t uint32() {
-    uint32_t x;
-    fill( &x, 4 );
-    return x;
-  }
-
-  uint64_t uint64() {
-    uint64_t x;
-    fill( &x, 8 );
-    return x;
-  }
-};
-
+#if HAVE_CLOCK_GETTIME
+ #include <time.h>
+#elif HAVE_MACH_ABSOLUTE_TIME
+ #include <mach/mach_time.h>
+#elif HAVE_GETTIMEOFDAY
+ #include <sys/time.h>
 #endif
+
+static uint64_t millis_cache = -1;
+
+uint64_t frozen_timestamp( void )
+{
+  if ( millis_cache == uint64_t( -1 ) ) {
+    freeze_timestamp();
+  }
+
+  return millis_cache;
+}
+
+void freeze_timestamp( void )
+{
+#if HAVE_CLOCK_GETTIME
+  struct timespec tp;
+
+  if ( clock_gettime( CLOCK_MONOTONIC, &tp ) < 0 ) {
+    /* did not succeed */
+  } else {
+    uint64_t millis = tp.tv_nsec / 1000000;
+    millis += uint64_t( tp.tv_sec ) * 1000;
+
+    millis_cache = millis;
+    return;
+  }
+#elif HAVE_MACH_ABSOLUTE_TIME
+  static mach_timebase_info_data_t s_timebase_info;
+
+  if (s_timebase_info.denom == 0) {
+    mach_timebase_info(&s_timebase_info);
+  }
+
+  // NB: mach_absolute_time() returns "absolute time units"
+  // We need to apply a conversion to get milliseconds.
+  millis_cache = ((mach_absolute_time() * s_timebase_info.numer) / (1000000 * s_timebase_info.denom));
+  return;								    
+#elif HAVE_GETTIMEOFDAY
+  // NOTE: If time steps backwards, timeouts may be confused.
+  struct timeval tv;
+  if ( gettimeofday(&tv, NULL) ) {
+    perror( "gettimeofday" );
+  } else {
+    uint64_t millis = tv.tv_usec / 1000;
+    millis += uint64_t( tv.tv_sec ) * 1000;
+
+    millis_cache = millis;
+    return;
+  }
+#else
+# error "Don't know how to get a timestamp on this platform"
+#endif
+}
