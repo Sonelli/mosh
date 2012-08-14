@@ -8,11 +8,12 @@ case "$1" in
     if [ \! -f configure ]; then
       ./autogen.sh
     fi
-    NCURSES_INCLUDE=~/droid/data/local/include/ncurses/
-    export OPENSSL_CFLAGS=-I${HOME}/droid/data/local/include/openssl/
+    NCURSES_INCLUDE=~/droid/$BASEDIR/include/ncurses/
+    export OPENSSL_CFLAGS=-I${HOME}/droid/$BASEDIR/include/openssl/
     export OPENSSL_LIBS="-lssl -lcrypto"
+    export USE_STATIC_GNUSTL=1
     ./configure --host=arm-linux --prefix=/$BASEDIR \
-      CC=agcc CXX=ag++ LDFLAGS="-Wl,-dynamic-linker,/$BASEDIR/bin/linker" \
+      CC=agcc CXX=ag++ \
       CXXFLAGS="-I$NCURSES_INCLUDE"
     # -lpthread comes from the cross-compiling machine's library requirements
     # -lutil is needed for forkpty on the cross-compiling machine
@@ -32,6 +33,7 @@ case "$1" in
     mkdir -p $DESTDIR
     make install DESTDIR=$DESTDIR
     install -m755 src/frontend/mosh $DESTDIR/$BASEDIR/bin/
+    astrip $DESTDIR/$BASEDIR/bin/mosh-client
     ;;
     
   clean)
