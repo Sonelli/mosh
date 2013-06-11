@@ -8,13 +8,16 @@ case "$1" in
     if [ \! -f configure ]; then
       ./autogen.sh
     fi
-    NCURSES_INCLUDE=~/droid/$BASEDIR/include/ncurses/
+    NCURSES_INCLUDE=${HOME}/droid/$BASEDIR/include/ncurses/
     export OPENSSL_CFLAGS=-I${HOME}/droid/$BASEDIR/include/openssl/
     export OPENSSL_LIBS="-lssl -lcrypto"
+    export NCURSES_LIBS="-L$NCURSES_INCLUDE -lncurses"
     export USE_STATIC_GNUSTL=1
     ./configure --host=arm-linux --prefix=/$BASEDIR \
-      CC=agcc CXX=ag++ \
-      CXXFLAGS="-I$NCURSES_INCLUDE"
+      CC=agcc CXX=ag++ CXXCPP="ag++ -E" \
+      CPPFLAGS="-I$NCURSES_INCLUDE" \
+      PKG_CONFIG_PATH=$HOME/droid/$BASEDIR/lib/pkgconfig/
+
     # -lpthread comes from the cross-compiling machine's library requirements
     # -lutil is needed for forkpty on the cross-compiling machine
     # -fPIE/-pie breaks android's dynamic linker
