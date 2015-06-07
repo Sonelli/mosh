@@ -75,7 +75,7 @@ private:
   }
 
 public:
-  STMClient( const char *s_ip, int s_port, const char *s_key, const char *predict_mode )
+  STMClient( const char *s_ip, int s_port, const char *s_key, const char *predict_mode, const char *predict_overwrite )
     : ip( s_ip ), port( s_port ), key( s_key ),
       saved_termios(), raw_termios(),
       window_size(),
@@ -103,6 +103,9 @@ public:
 	exit( 1 );
       }
     }
+    if ( predict_overwrite && !strcmp( predict_overwrite, "yes" ) ) {
+      overlays.get_prediction_engine().set_predict_overwrite( true );
+    } 
   }
 
   void init( void );
