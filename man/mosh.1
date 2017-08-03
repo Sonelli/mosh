@@ -121,8 +121,67 @@ Synonym for \-\-predict=always
 Synonym for \-\-predict=never
 
 .TP
+
 .B \-p \fINUM\fP, \-\-port=\fINUM\fP
 Use a particular server-side UDP port, for example, if this is the
+
+.B \-\-predict\-overwrite\fP
+When prediction is enabled, do not insert speculative local echo
+before existing text, but overwrite it instead.
+
+The MOSH_PREDICTION_OVERWRITE environment variable also enables this
+if its value is 'yes'.
+
+.TP
+.B \-o
+Synonym for \-\-predict\-overwrite
+
+.TP
+.B \-\-family=inet
+Only use IPv4 for the SSH connection and Mosh session.
+
+.TP
+.B \-\-family=inet6
+Only use IPv6 for the SSH connection and Mosh session.  This and the
+following modes require Perl's IO::Socket::IP or IO::Socket::INET6
+modules.
+
+.TP
+.B \-\-family=auto
+Autodetect IPv4 or IPv6 for hosts that only have addresses
+in a single family.  Hosts with both IPv4 and IPv6 addresses will
+raise an error, and require re-invocation of \fBmosh\fP with another
+\fB\-\-family\fP option.
+
+.TP
+.B \-\-family=all
+Choose an address from all available IPv4 or IPv6 address, even for
+dual-stack hosts.  This is the most convenient option, but requires
+dual-stack connectivity, and Mosh 1.2.5 or later on the server, when
+roaming with dual-stack servers.
+
+.TP
+.B \-\-family=prefer-inet
+Similar to \fB\-\-family=all\fP, but attempt connects to the IPv4
+addresses first.  This is the default.
+
+.TP
+.B \-\-family=prefer-inet6
+Similar to \fB\-\-family=all\fP, but attempt connects to the IPv6
+addresses first.
+
+.TP
+.B \-4
+Synonym for \-\-family=inet
+
+.TP
+.B \-6
+Synonym for \-\-family=inet6
+
+.TP
+.B \-p \fIPORT\fP[:\fIPORT2\fP], \-\-port=\fIPORT\fP[:\fIPORT2\fP]
+Use a particular server-side UDP port or port range,
+for example, if this is the
 only port that is forwarded through a firewall to the
 server. Otherwise, \fBmosh\fP will choose a port between 60000 and
 61000.

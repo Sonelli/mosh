@@ -69,7 +69,7 @@ qq{Usage: $0 [options] [--] [user@]host [command...]
 -n      --predict=never         never use local echo
         --predict=experimental  aggressively echo even when incorrect
 
--o      --overwrite             prediction overwrites instead of inserting
+-o      --predict-overwrite             prediction overwrites instead of inserting
 
 -p NUM  --port=NUM           server-side UDP port
 
@@ -130,7 +130,7 @@ sub ip_and_sockaddr {
 GetOptions( 'client=s' => \$client,
 	    'server=s' => \$server,
 	    'predict=s' => \$predict,
-	    'overwrite|o!' => \$overwrite,
+	    'predict-overwrite|o!' => \$overwrite,
 	    'port=i' => \$port_request,
 	    'a' => sub { $predict = 'always' },
 	    'n' => sub { $predict = 'never' },
